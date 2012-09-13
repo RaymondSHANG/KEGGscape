@@ -10,7 +10,9 @@ import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -29,6 +31,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
+import com.google.common.collect.MapDifference.ValueDifference;
 
 import cytoscape.CyEdge;
 import cytoscape.CyNetwork;
@@ -163,14 +171,18 @@ public class PathwayMapper {
 			}
 		}
 		
-		// make hash reaction to gene
-		for (String coord : coord2geneMap.keySet()) {
-			reactionId2geneMap.put(coord2reactionMap.get(coord), coord2geneMap.get(coord));
-		}
-		
 		System.out.println(coord2reactionMap.size());
 		System.out.println(coord2geneMap.size());
-		System.out.println(reactionId2geneMap.size());
+		
+		Function<ValueDifference<String>, String> leftValue = new Function<MapDifference.ValueDifference<String>, String>() {
+			public String apply(ValueDifference<String> vdiff) {
+				return vdiff.leftValue();
+			}
+		};
+		
+		Collection<String> rnids = Collections2.transform(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values(), leftValue);
+	
+		System.out.println(rnids);
 		
 	}
 

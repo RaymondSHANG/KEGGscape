@@ -12,12 +12,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.biojava.bio.seq.db.HashSequenceDB;
 import org.cytoscape.data.reader.kgml.generated.Entry;
 import org.cytoscape.data.reader.kgml.generated.Graphics;
 import org.cytoscape.data.reader.kgml.generated.Pathway;
@@ -36,7 +39,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.MapDifference.ValueDifference;
+import com.google.common.collect.Sets.SetView;
 
 import cytoscape.CyEdge;
 import cytoscape.CyNetwork;
@@ -88,7 +93,8 @@ public class PathwayMapper {
 	private static final String BIOSYNTHESIS_OF_SECONDARY_METABOLITES_ENTRY_ID = "01110";
 	
 	// This is a hack: special cases for global map
-	private List<String> reactionNames = new ArrayList<String>();
+	private Collection<String> htmlReactionNames = new HashSet<String>();
+	private Set<String> reactionNames = new HashSet<String>();
 	private static final Map<String, String> MISSING_EDGES = new HashMap<String, String>();
 	private static final Map<String, String> MISSING_EDGES_COLOR = new HashMap<String, String>();
 	static  {
@@ -130,6 +136,11 @@ public class PathwayMapper {
 		final List<CyEdge> relationEdges = mapRelationEdge();
 		final List<CyEdge> reactionEdges = mapReactionEdge();
 		parseHtml();
+		
+//		SetView<String> hoge = Sets.intersection(htmlReactionNames, reactionNames);
+//		SetView<String> moge = Sets.difference(htmlReactionNames, reactionNames);
+//		System.out.println(hoge.size());
+//		System.out.println(moge.size());
 
 		edgeIdx = new int[relationEdges.size() + reactionEdges.size()];
 		int idx = 0;
@@ -180,10 +191,8 @@ public class PathwayMapper {
 			}
 		};
 		
-		Collection<String> rnids = Collections2.transform(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values(), leftValue);
-	
-		System.out.println(rnids);
-		
+	    htmlReactionNames = Collections2.transform(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values(), leftValue);
+			
 	}
 
 	private final Map<String, Entry> entryMap = new HashMap<String, Entry>();
@@ -442,6 +451,7 @@ public class PathwayMapper {
 					}
 				}
 			}
+			// System.out.println(reactionNames);
 		} else {
 			for (Reaction rea : reactions) {
 				CyNode reaNode = nodeMap.get(rea.getId());

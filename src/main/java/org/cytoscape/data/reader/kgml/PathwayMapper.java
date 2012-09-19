@@ -93,7 +93,7 @@ public class PathwayMapper {
 	private static final String BIOSYNTHESIS_OF_SECONDARY_METABOLITES_ENTRY_ID = "01110";
 	
 	// This is a hack: special cases for global map
-	private Collection<String> htmlReactionNames = new HashSet<String>();
+	private Set<String> htmlReactionNames = new HashSet<String>();
 	private Set<String> reactionNames = new HashSet<String>();
 	private static final Map<String, String> MISSING_EDGES = new HashMap<String, String>();
 	private static final Map<String, String> MISSING_EDGES_COLOR = new HashMap<String, String>();
@@ -135,12 +135,12 @@ public class PathwayMapper {
 		mapNode();
 		final List<CyEdge> relationEdges = mapRelationEdge();
 		final List<CyEdge> reactionEdges = mapReactionEdge();
-		parseHtml();
-		
-//		SetView<String> hoge = Sets.intersection(htmlReactionNames, reactionNames);
+//		parseHtml();
+
+////		SetView<String> hoge = Sets.intersection(htmlReactionNames, reactionNames);
 //		SetView<String> moge = Sets.difference(htmlReactionNames, reactionNames);
-//		System.out.println(hoge.size());
-//		System.out.println(moge.size());
+////		System.out.println(hoge.size());
+//		System.out.println(moge);
 
 		edgeIdx = new int[relationEdges.size() + reactionEdges.size()];
 		int idx = 0;
@@ -156,44 +156,47 @@ public class PathwayMapper {
 		}
 	}
 	
-	public void parseHtml() throws IOException{
-		Map<String, String> coord2reactionMap = new HashMap<String, String>();
-		Map<String, String> coord2geneMap = new HashMap<String, String>();
-		Map<String, String> reactionId2geneMap = new HashMap<String, String>();
-		
-		String reactionHtmlUrl = "http://www.genome.jp/kegg-bin/show_pathway?org_name=rn&mapno=" + this.pathwayId;
-		String geneHtmlUrl = "http://www.genome.jp/kegg-bin/show_pathway?org_name=" + this.pathwayOrg + "&mapno=" + this.pathwayId;
-		
-		// hash all reactions coords
-		Document doc = Jsoup.connect(reactionHtmlUrl).get();
-		Elements links = doc.getElementsByTag("area");
-		for (Element element : links) {
-			if (element.attr("shape").equals("poly")) {
-				coord2reactionMap.put(element.attr("coords"), element.attr("title").split(", RP")[0].replaceAll("R", "rn:R").replaceAll(",", ""));
-			}
-		}
-		
-		// retrieve annotated reactions
-		doc = Jsoup.connect(geneHtmlUrl).get();
-		links = doc.getElementsByTag("area");
-		for (Element element : links) {
-			if (element.attr("shape").equals("poly")) {
-				coord2geneMap.put(element.attr("coords"), element.attr("title"));
-			}
-		}
-		
-		System.out.println(coord2reactionMap.size());
-		System.out.println(coord2geneMap.size());
-		
-		Function<ValueDifference<String>, String> leftValue = new Function<MapDifference.ValueDifference<String>, String>() {
-			public String apply(ValueDifference<String> vdiff) {
-				return vdiff.leftValue();
-			}
-		};
-		
-	    htmlReactionNames = Collections2.transform(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values(), leftValue);
-			
-	}
+//	public void parseHtml() throws IOException{
+//		Map<String, String> coord2reactionMap = new HashMap<String, String>();
+//		Map<String, String> coord2geneMap = new HashMap<String, String>();
+//		Map<String, String> reactionId2geneMap = new HashMap<String, String>();
+//		
+//		String reactionHtmlUrl = "http://www.genome.jp/kegg-bin/show_pathway?org_name=rn&mapno=" + this.pathwayId;
+//		String geneHtmlUrl = "http://www.genome.jp/kegg-bin/show_pathway?org_name=" + this.pathwayOrg + "&mapno=" + this.pathwayId;
+//		
+//		// hash all reactions coords
+//		Document doc = Jsoup.connect(reactionHtmlUrl).get();
+//		Elements links = doc.getElementsByTag("area");
+//		for (Element element : links) {
+//			if (element.attr("shape").equals("poly")) {
+//				coord2reactionMap.put(element.attr("coords"), element.attr("title").split(", RP")[0].replaceAll("R", "rn:R").replaceAll(",", ""));
+//			}
+//		}
+//		
+//		// retrieve annotated reactions
+//		doc = Jsoup.connect(geneHtmlUrl).get();
+//		links = doc.getElementsByTag("area");
+//		for (Element element : links) {
+//			if (element.attr("shape").equals("poly")) {
+//				coord2geneMap.put(element.attr("coords"), element.attr("title"));
+//			}
+//		}
+//		
+//		System.out.println(coord2reactionMap.size());
+//		System.out.println(coord2geneMap.size());
+//		
+//		Function<ValueDifference<String>, String> leftValue = new Function<MapDifference.ValueDifference<String>, String>() {
+//			public String apply(ValueDifference<String> vdiff) {
+//				return vdiff.leftValue();
+//			}
+//		};
+//		
+////	    System.out.println(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values());
+//	    
+//	    htmlReactionNames = new HashSet(Collections2.transform(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values(), leftValue));
+////	    System.out.println(htmlReactionNames);
+//
+//	}
 
 	private final Map<String, Entry> entryMap = new HashMap<String, Entry>();
 	private final Map<String, Entry> edgeEntryMap = new HashMap<String, Entry>();
@@ -282,9 +285,14 @@ public class PathwayMapper {
 						// to entryMap even in "line" graphics.
 						if (pathway_entryID.equals(METABOLIC_PATHWAYS_ENTRY_ID)
 								|| pathway_entryID.equals(BIOSYNTHESIS_OF_SECONDARY_METABOLITES_ENTRY_ID)) {
-							if (grap.getType().equals(KEGGShape.LINE.getTag())) {
+							if (comp.getType().equals("gene")) {
 								edgeEntryMap.put(comp.getId(), comp);
 							}
+								
+//							if (grap.getType().equals(KEGGShape.LINE.getTag())) {
+//								edgeEntryMap.put(comp.getId(), comp);
+//							}
+
 						}
 					}
 				}
@@ -426,7 +434,7 @@ public class PathwayMapper {
 			}
 			
 			for (Reaction rea : reactions) {
-				reactionNames.add(rea.getName());
+				reactionNames.add(rea.getId());
 				
 				final List<Product> products = rea.getProduct();
 				final List<Substrate> substrates = rea.getSubstrate();
@@ -451,7 +459,13 @@ public class PathwayMapper {
 					}
 				}
 			}
-			// System.out.println(reactionNames);
+			
+			// edges not in reaction tags
+			System.out.println(Sets.difference(edgeEntryMap.keySet(), reactionNames));
+			for (String id : Sets.difference(edgeEntryMap.keySet(), reactionNames)) {
+				System.out.println(edgeEntryMap.get(id).getReaction());
+			}
+
 		} else {
 			for (Reaction rea : reactions) {
 				CyNode reaNode = nodeMap.get(rea.getId());

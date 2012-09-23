@@ -13,12 +13,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
+import org.cytoscape.data.reader.kgml.PathwayMapper;
 import org.cytoscape.equations.builtins.Left;
 
+import cytoscape.CyEdge;
 import cytoscape.CyNetwork;
 import cytoscape.CyNode;
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
+import cytoscape.data.Semantics;
 import cytoscape.view.CyNetworkView;
 import cytoscape.visual.VisualStyle;
 
@@ -34,7 +37,20 @@ public class KEGGRestClient {
 	private static final String USER_AGENT = "Cytoscape KEGG/togoWS REST Client v0.06 (Apache HttpClient 4.0.1)";
 
 	private static final String KEGG_BASE_URL = "http://togows.dbcls.jp/entry/";
+	private static final String KEGG_REST_BASE_URL = "http://rest.kegg.jp/";
 	private static final String FORMAT_JSON = ".json";
+	
+	private static final String KEGG_NAME_LIST = "KEGG.name.list";
+	private static final String KEGG_ENTRY = "KEGG.entry";
+	private static final String KEGG_LABEL = "KEGG.label";
+	private static final String KEGG_LABEL_LIST = "KEGG.label.list";
+	private static final String KEGG_LABEL_LIST_FIRST = "KEGG.label.first";
+	private static final String KEGG_RELATION = "KEGG.relation";
+	private static final String KEGG_REACTION = "KEGG.reaction";
+	private static final String KEGG_REACTION_LIST = "KEGG.reaction.list";
+	private static final String KEGG_LINK = "KEGG.link";
+	private static final String KEGG_TYPE = "KEGG.type";
+	private static final String KEGG_COLOR = "KEGG.color";
 	
 	private final CyAttributes attr;
 	private final CyAttributes nodeAttr;
@@ -105,6 +121,47 @@ public class KEGGRestClient {
 		view.redrawGraph(false, true);
 
 	}
+	
+	public List<CyEdge> completeEdges(final String reactionIDs) throws IOException {
+		String[] entry = getRestEntries(reactionIDs).split("///\n");
+		final List<CyNode> cyNodes = Cytoscape.getCyNodesList();
+		List<CyEdge> edges = new ArrayList<CyEdge>();
+		
+		for (int i = 0; i < entry.length; i++) {
+			for (String field : entry[i].split("\n[A-Z]")) {
+				if (field.substring(0, 11).equals("PAIR       ")) {
+					for (String rpair : field.replaceAll("PAIR       ", "").split("\n            ")) {
+						String substrateId = rpair.split("  ")[1].split("_")[0];
+						String productId = rpair.split("  ")[1].split("_")[1].substring(0, 6);
+						System.out.println(substrateId);
+						System.out.println(productId); 
+						
+						// String nodeId1 = new String();
+						// String nodeId2 = new String();
+						CyNode cyNode1 = null;
+						CyNode cyNode2 = null;
+						
+						for (CyNode cyNode : cyNodes) {
+							if (nodeAttr.getAttribute(cyNode.getIdentifier(), KEGG_LABEL).equals(substrateId)) {
+								// nodeId1 = cyNode.getIdentifier();
+								cyNode1 = cyNode;
+							}
+							if (nodeAttr.getAttribute(cyNode.getIdentifier(), KEGG_LABEL).equals(productId)) {
+								// nodeId2 = cyNode.getIdentifier();
+								cyNode2 = cyNode;
+							}
+						}
+						// if (!(nodeId1.isEmpty()) && !(nodeId2.isEmpty())) {
+						if (cyNode1 != null && cyNode2 != null) {
+							final CyEdge edge = Cytoscape.getCyEdge(cyNode1, cyNode2, Semantics.INTERACTION, "cc", true);
+							edges.add(edge);
+						}
+					}
+				}
+			}
+		}
+		return edges;
+	}
 
 	public void importAnnotation(final String pathwayID, CyNetwork network) throws IOException {
 
@@ -160,6 +217,11 @@ public class KEGGRestClient {
 			resultMap.put(keys, vals);
 		}
 		return resultMap;
+	}
+	
+	private String getRestEntries(final String ids) throws IOException {
+		final HttpGet httpget = new HttpGet(KEGG_REST_BASE_URL + "get/" + ids);
+		return fetchData(httpget);
 	}
 
 	private String getEntries(final DatabaseType type, final String id) throws IOException {

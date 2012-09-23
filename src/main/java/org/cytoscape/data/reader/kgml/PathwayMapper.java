@@ -134,13 +134,7 @@ public class PathwayMapper {
 	public void doMapping() throws IOException {
 		mapNode();
 		final List<CyEdge> relationEdges = mapRelationEdge();
-		final List<CyEdge> reactionEdges = mapReactionEdge();
-//		parseHtml();
-
-////		SetView<String> hoge = Sets.intersection(htmlReactionNames, reactionNames);
-//		SetView<String> moge = Sets.difference(htmlReactionNames, reactionNames);
-////		System.out.println(hoge.size());
-//		System.out.println(moge);
+		final List<CyEdge> reactionEdges = mapReactionEdge(); 
 
 		edgeIdx = new int[relationEdges.size() + reactionEdges.size()];
 		int idx = 0;
@@ -156,48 +150,6 @@ public class PathwayMapper {
 		}
 	}
 	
-//	public void parseHtml() throws IOException{
-//		Map<String, String> coord2reactionMap = new HashMap<String, String>();
-//		Map<String, String> coord2geneMap = new HashMap<String, String>();
-//		Map<String, String> reactionId2geneMap = new HashMap<String, String>();
-//		
-//		String reactionHtmlUrl = "http://www.genome.jp/kegg-bin/show_pathway?org_name=rn&mapno=" + this.pathwayId;
-//		String geneHtmlUrl = "http://www.genome.jp/kegg-bin/show_pathway?org_name=" + this.pathwayOrg + "&mapno=" + this.pathwayId;
-//		
-//		// hash all reactions coords
-//		Document doc = Jsoup.connect(reactionHtmlUrl).get();
-//		Elements links = doc.getElementsByTag("area");
-//		for (Element element : links) {
-//			if (element.attr("shape").equals("poly")) {
-//				coord2reactionMap.put(element.attr("coords"), element.attr("title").split(", RP")[0].replaceAll("R", "rn:R").replaceAll(",", ""));
-//			}
-//		}
-//		
-//		// retrieve annotated reactions
-//		doc = Jsoup.connect(geneHtmlUrl).get();
-//		links = doc.getElementsByTag("area");
-//		for (Element element : links) {
-//			if (element.attr("shape").equals("poly")) {
-//				coord2geneMap.put(element.attr("coords"), element.attr("title"));
-//			}
-//		}
-//		
-//		System.out.println(coord2reactionMap.size());
-//		System.out.println(coord2geneMap.size());
-//		
-//		Function<ValueDifference<String>, String> leftValue = new Function<MapDifference.ValueDifference<String>, String>() {
-//			public String apply(ValueDifference<String> vdiff) {
-//				return vdiff.leftValue();
-//			}
-//		};
-//		
-////	    System.out.println(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values());
-//	    
-//	    htmlReactionNames = new HashSet(Collections2.transform(Maps.difference(coord2reactionMap, coord2geneMap).entriesDiffering().values(), leftValue));
-////	    System.out.println(htmlReactionNames);
-//
-//	}
-
 	private final Map<String, Entry> entryMap = new HashMap<String, Entry>();
 	private final Map<String, Entry> edgeEntryMap = new HashMap<String, Entry>();
 
@@ -267,7 +219,6 @@ public class PathwayMapper {
 								cpdName2cpdIDMap.put(comp.getName().split(":")[1], comp.getId());
 								
 								List<Entry> current = cpdDataMap.get(comp.getName());
-
 								if (current != null) {
 									current.add(comp);
 								} else {
@@ -288,11 +239,6 @@ public class PathwayMapper {
 							if (comp.getType().equals("gene")) {
 								edgeEntryMap.put(comp.getId(), comp);
 							}
-								
-//							if (grap.getType().equals(KEGGShape.LINE.getTag())) {
-//								edgeEntryMap.put(comp.getId(), comp);
-//							}
-
 						}
 					}
 				}
@@ -409,13 +355,14 @@ public class PathwayMapper {
 		return edges;
 	}
 
-	private List<CyEdge> mapReactionEdge() {
+	private List<CyEdge> mapReactionEdge() throws IOException {
 
 		final String pathway_entryID = pathway.getNumber();
 		final List<Reaction> reactions = pathway.getReaction();
 		final List<CyEdge> edges = new ArrayList<CyEdge>();
 
 		CyAttributes edgeAttr = Cytoscape.getEdgeAttributes();
+		CyAttributes nodeAttr = Cytoscape.getNodeAttributes();
 
 		// Special case: global map
 		if (pathway_entryID.equals(METABOLIC_PATHWAYS_ENTRY_ID)
@@ -465,6 +412,7 @@ public class PathwayMapper {
 			for (String id : Sets.difference(edgeEntryMap.keySet(), reactionNames)) {
 				if (edgeEntryMap.get(id).getReaction() != null) {
 					System.out.println("http://rest.kegg.jp/get/" + edgeEntryMap.get(id).getReaction().replaceAll("rn:", "").replaceAll(" ", "+"));
+					edges.addAll(KEGGRestClient.getCleint().completeEdges(edgeEntryMap.get(id).getReaction().replaceAll("rn:", "").replaceAll(" ", "+")));
 				}
 			}
 

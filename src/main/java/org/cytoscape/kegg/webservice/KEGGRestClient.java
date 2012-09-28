@@ -126,18 +126,18 @@ public class KEGGRestClient {
 		String[] entry = getRestEntries(reactionIDs).split("///\n");
 		final List<CyNode> cyNodes = Cytoscape.getCyNodesList();
 		List<CyEdge> edges = new ArrayList<CyEdge>();
-		
+		List<String> trivialCpds = new ArrayList<String>();
+        trivialCpds.add("C00005");
+        trivialCpds.add("C00006");
+        trivialCpds.add("C00010");
+
 		for (int i = 0; i < entry.length; i++) {
 			for (String field : entry[i].split("\n[A-Z]")) {
 				if (field.substring(0, 11).equals("PAIR       ")) {
 					for (String rpair : field.replaceAll("PAIR       ", "").split("\n            ")) {
 						String substrateId = rpair.split("  ")[1].split("_")[0];
 						String productId = rpair.split("  ")[1].split("_")[1].substring(0, 6);
-						System.out.println(substrateId);
-						System.out.println(productId); 
-						
-						// String nodeId1 = new String();
-						// String nodeId2 = new String();
+						String category  = rpair.split("  ")[1].split("_")[1].split(" ")[1];
 						CyNode cyNode1 = null;
 						CyNode cyNode2 = null;
 						
@@ -151,10 +151,11 @@ public class KEGGRestClient {
 								cyNode2 = cyNode;
 							}
 						}
-						// if (!(nodeId1.isEmpty()) && !(nodeId2.isEmpty())) {
-						if (cyNode1 != null && cyNode2 != null) {
-							final CyEdge edge = Cytoscape.getCyEdge(cyNode1, cyNode2, Semantics.INTERACTION, "cc", true);
-							edges.add(edge);
+						if (cyNode1 != null && cyNode2 != null && category.equals("main")) {
+							if (!trivialCpds.contains(nodeAttr.getAttribute(cyNode1.getIdentifier(), KEGG_LABEL)) && !trivialCpds.contains(nodeAttr.getAttribute(cyNode2.getIdentifier(), KEGG_LABEL))) {
+								final CyEdge edge = Cytoscape.getCyEdge(cyNode1, cyNode2, Semantics.INTERACTION, "cc", true);
+								edges.add(edge);
+							}
 						}
 					}
 				}

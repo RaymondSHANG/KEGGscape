@@ -407,12 +407,14 @@ public class PathwayMapper {
 				}
 			}
 			
-			// edges not in reaction tags
-			//System.out.println(Sets.difference(edgeEntryMap.keySet(), reactionNames));
+			// create edges not in reaction tags
 			for (String id : Sets.difference(edgeEntryMap.keySet(), reactionNames)) {
 				if (edgeEntryMap.get(id).getReaction() != null) {
-					System.out.println("http://rest.kegg.jp/get/" + edgeEntryMap.get(id).getReaction().replaceAll("rn:", "").replaceAll(" ", "+"));
-					edges.addAll(KEGGRestClient.getCleint().completeEdges(edgeEntryMap.get(id).getReaction().replaceAll("rn:", "").replaceAll(" ", "+")));
+					String reactionIds = edgeEntryMap.get(id).getReaction().replaceAll(" ", "+");
+					edges.addAll(KEGGRestClient.getCleint().completeReactionEdges(reactionIds));
+				} else {
+					String reactionIds = StringUtils.join(KEGGRestClient.getCleint().getReactionIds(edgeEntryMap.get(id).getName().replaceAll(" ", "+")), "+");
+					edges.addAll(KEGGRestClient.getCleint().completeReactionEdges(reactionIds));
 				}
 			}
 

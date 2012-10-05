@@ -44,6 +44,7 @@ public class KEGGRestClient {
 	private static final String KEGG_REST_BASE_URL = "http://rest.kegg.jp/";
 	private static final String FORMAT_JSON = ".json";
 
+	private static final String KEGG_NAME = "KEGG.name";
 	private static final String KEGG_NAME_LIST = "KEGG.name.list";
 	private static final String KEGG_ENTRY = "KEGG.entry";
 	private static final String KEGG_LABEL = "KEGG.label";
@@ -136,7 +137,7 @@ public class KEGGRestClient {
 
 	}
 
-	public List<CyEdge> completeReactionEdges(final String reactionIds) throws IOException {
+	public List<CyEdge> completeReactionEdges(final String reactionIds, CyAttributes edgeAttr, String keggName, String keggReaction, String keggType, String keggLink, String keggColor) throws IOException {
 		final List<CyNode> cyNodes = Cytoscape.getCyNodesList();
 		List<CyEdge> edges = new ArrayList<CyEdge>();
 		Set<String> currencyCpds = new HashSet<String>();
@@ -175,6 +176,11 @@ public class KEGGRestClient {
 									final CyEdge edge = Cytoscape.getCyEdge(cyNode1, cyNode2, Semantics.INTERACTION, "cc", true);
 									System.out.println("created edge between " + cpdId1 + ", " + cpdId2);
 									edges.add(edge);
+									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_NAME, keggName);
+									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_REACTION, keggReaction);
+									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_TYPE, keggType);
+									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_LINK, keggLink);
+									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_COLOR, keggColor);
 								}
 								
 							}

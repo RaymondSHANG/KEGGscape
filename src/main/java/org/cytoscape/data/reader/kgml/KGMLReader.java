@@ -36,7 +36,7 @@ public class KGMLReader extends AbstractGraphReader {
 	static final String TITLE = "KEGG.title";
 
 	// For importing annotation in background thread
-	final ExecutorService ex = Executors.newSingleThreadExecutor();
+	private final ExecutorService ex = Executors.newCachedThreadPool();
 
 	private URL targetURL;
 
@@ -145,6 +145,12 @@ public class KGMLReader extends AbstractGraphReader {
 					"Loading KEGG annotation for " + network.getTitle()
 							+ " from TogoWS in background...");
 			ex.execute(new ImportAnnotationTask(network));
+			
+			try {
+				ex.shutdown();
+			} catch (Exception ex) {
+				CyLogger.getLogger().warning("Could not finish import from external data service.", ex);
+			}
 		}
 
 	}

@@ -163,6 +163,7 @@ public class KGMLReader extends AbstractGraphReader {
 						pathway.getOrg() + pathway.getNumber(), network);
 				KEGGRestClient.getCleint().importCompoundName(
 						pathway.getName(), network);
+				KEGGRestClient.getCleint().importHmdb(network);
 			} catch (IOException e) {
 				e.printStackTrace();
 				CyLogger.getLogger().error("Failed to import annotation.", e);

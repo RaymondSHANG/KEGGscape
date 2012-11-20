@@ -62,7 +62,7 @@ public class KEGGRestClient {
 
 	private enum DatabaseType {
 		COMPOUND("compound"), PATHWAY("kegg-pathway"), MODULE("kegg-module"), REACTION(
-				"reaction");
+				"reaction"), HMDB("hmdb");
 
 		private final String type;
 
@@ -135,6 +135,16 @@ public class KEGGRestClient {
 		Cytoscape.getVisualMappingManager().setNetworkView(view);
 		view.redrawGraph(false, true);
 
+	}
+	
+	public void importHmdb(CyNetwork network) throws IOException {
+		final List<CyNode> cyNodes = Cytoscape.getCyNodesList();
+		for (CyNode cyNode : cyNodes) {
+			if (nodeAttr.getStringAttribute(cyNode.getIdentifier(), "KEGG.entry").equals("compound")) {
+				final String hmdbId = getLinkonlyDbId(DatabaseType.HMDB, nodeAttr.getStringAttribute(cyNode.getIdentifier(),  "KEGG.name"));
+				nodeAttr.setAttribute(cyNode.getIdentifier(), "HMDBid", hmdbId);
+			}
+		}
 	}
 
 	public List<CyEdge> completeReactionEdges(final String reactionIds, CyAttributes edgeAttr, String keggName, String keggReaction, String keggType, String keggLink, String keggColor) throws IOException {
@@ -310,6 +320,14 @@ public class KEGGRestClient {
 
 		System.out.println("* Entry URL = " + uriString);
 
+		return fetchData(httpget);
+	}
+	
+	private String getLinkonlyDbId(final DatabaseType dbType, final String id) throws IOException{
+		final String uriString = KEGG_REST_BASE_URL + "/link/" + id.trim()
+				+ "+-t+" + dbType.getType();
+		final HttpGet httpget = new HttpGet(uriString);
+		System.out.println("* Entry URL = " + uriString);
 		return fetchData(httpget);
 	}
 

@@ -191,6 +191,7 @@ public class KEGGRestClient {
 									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_TYPE, keggType);
 									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_LINK, keggLink);
 									edgeAttr.setAttribute(edge.getIdentifier(), KEGG_COLOR, keggColor);
+									edgeAttr.setAttribute(edge.getIdentifier(), "has-reaction-id", "no");
 								}
 								
 							}

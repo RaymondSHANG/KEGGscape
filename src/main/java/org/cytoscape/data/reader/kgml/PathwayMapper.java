@@ -156,7 +156,7 @@ public class PathwayMapper {
 			if (!comp.getType().equals("group")) {
 
 				for (Graphics grap : comp.getGraphics()) {
-					if (!titleNodePattern.matcher(grap.getName()).matches()) {
+//					if (!titleNodePattern.matcher(grap.getName()).matches()) {
 						if (!grap.getType().equals(KEGGShape.LINE.getTag())) {
 							CyNode node = Cytoscape.getCyNode(pathwayID + "-" + comp.getId(), true);
 							nodeAttr.setAttribute(node.getIdentifier(), KEGG_NAME, comp.getName());
@@ -219,7 +219,7 @@ public class PathwayMapper {
 								edgeEntryMap.put(comp.getId(), comp);
 							}
 						}
-					}
+//					}
 				}
 
 			}

@@ -240,15 +240,16 @@ public class PathwayMapper {
 		final List<CyEdge> edges = new ArrayList<CyEdge>();
 
 		final CyAttributes edgeAttr = Cytoscape.getEdgeAttributes();
-
+		
 		for (Relation rel : relations) {
 
 			final String type = rel.getType();
 
-			if (rel.getType().equals(KEGGRelationType.MAPLINK.getTag())) {
+			if (entryMap.containsKey(rel.getEntry1()) && entryMap.containsKey(rel.getEntry2())) {
+
 				final List<Subtype> subs = rel.getSubtype();
 
-				if (entryMap.containsKey(rel.getEntry1()) && entryMap.containsKey(rel.getEntry2())) {
+				if (rel.getType().equals(KEGGRelationType.MAPLINK.getTag())) {	
 
 					if (entryMap.get(rel.getEntry1()).getType().equals(KEGGEntryType.MAP.getTag())) {
 						CyNode maplinkNode = nodeMap.get(rel.getEntry1());
@@ -281,10 +282,19 @@ public class PathwayMapper {
 							edgeAttr.setAttribute(edge2.getIdentifier(), KEGG_RELATION, type);
 						}
 					}
-
 				}
-
+				
+				// signaling pathway support
+				if (rel.getType().equals(KEGGRelationType.PP_REL.getTag())) {
+					CyNode cyNode1 = nodeMap.get(rel.getEntry1());
+					CyNode cyNode2 = nodeMap.get(rel.getEntry2());
+					CyEdge cyEdge = Cytoscape.getCyEdge(cyNode1, cyNode2, Semantics.INTERACTION, type, true, true);
+					edges.add(cyEdge);
+//					edgeAttr.setAttribute(edge.getIdentifier(), KEGG_RELATION, type);
+				}
+				
 			}
+			
 		}
 
 		return edges;

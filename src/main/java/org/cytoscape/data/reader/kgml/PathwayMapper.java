@@ -49,6 +49,14 @@ public class PathwayMapper {
     private static final String KEGG_TYPE = "KEGG.type";
     private static final String KEGG_COLOR = "KEGG.color";
 
+    private static final String KEGG_EDGE_LABEL = "KEGG.edge.label";
+
+    private static final String KEGG_PHOSPHORYLATION = "phosphorylation";
+    private static final String KEGG_DEPHOSPHORYLATION = "dephosphorylation";
+    private static final String KEGG_UBIQUITINATION = "ubiquitination";
+    private static final String KEGG_GLYCOSYLATION = "glycosylation";
+    private static final String KEGG_METHYLATION = "methylation";
+
     // Special cases: Global Map
     private static final String METABOLIC_PATHWAYS_ENTRY_ID = "01100";
     private static final String BIOSYNTHESIS_OF_SECONDARY_METABOLITES_ENTRY_ID = "01110";
@@ -256,16 +264,26 @@ public class PathwayMapper {
                 }
 
                 // signaling pathway support
-                if (type.equals(KEGGRelationType.PP_REL.getTag()) |
-                        type.equals(KEGGRelationType.GE_REL.getTag()) |
+                if (type.equals(KEGGRelationType.PP_REL.getTag()) ||
+                        type.equals(KEGGRelationType.GE_REL.getTag()) ||
                         type.equals(KEGGRelationType.PC_REL.getTag())) {
                     CyNode cyNode1 = nodeMap.get(rel.getEntry1());
                     CyNode cyNode2 = nodeMap.get(rel.getEntry2());
                     CyEdge cyEdge = Cytoscape.getCyEdge(cyNode1, cyNode2, Semantics.INTERACTION, type, true, true);
                     edges.add(cyEdge);
                     for (Subtype sub : subs) {
+                        if (sub.getName().equals(KEGG_PHOSPHORYLATION) ||
+                            sub.getName().equals(KEGG_DEPHOSPHORYLATION) ||
+                            sub.getName().equals(KEGG_UBIQUITINATION) ||
+                            sub.getName().equals(KEGG_GLYCOSYLATION) ||
+                            sub.getName().equals(KEGG_METHYLATION)
+                            ) {
+                            edgeAttr.setAttribute(cyEdge.getIdentifier(), KEGG_EDGE_LABEL, sub.getValue());
+                        } else {
                         edgeAttr.setAttribute(cyEdge.getIdentifier(), sub.getName(), sub.getValue());
+                        }
                     }
+
                 }
 
             }
@@ -459,6 +477,12 @@ public class PathwayMapper {
         nac.getDefaultAppearance().set(VisualPropertyType.NODE_FONT_FACE, nodeLabelFont);
         nac.getDefaultAppearance().set(VisualPropertyType.NODE_FONT_SIZE, 6);
         nac.getDefaultAppearance().set(VisualPropertyType.NODE_LABEL_WIDTH, 15);
+
+        // Edge Label Mapping
+        final PassThroughMapping em = new PassThroughMapping("", KEGG_EDGE_LABEL);
+        final Calculator edgeLabelMappingCalc = new BasicCalculator(vsName + "-" + "EdgeLabelMapping", em, VisualPropertyType.EDGE_LABEL);
+        eac.setCalculator(edgeLabelMappingCalc);
+        eac.getDefaultAppearance().set(VisualPropertyType.EDGE_LABEL_WIDTH, 15);
 
         // Default Edge appr
         eac.getDefaultAppearance().set(VisualPropertyType.EDGE_TGTARROW_SHAPE, ArrowShape.DELTA);

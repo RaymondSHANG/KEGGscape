@@ -493,10 +493,18 @@ public class PathwayMapper {
         // Default Edge appr
         eac.getDefaultAppearance().set(VisualPropertyType.EDGE_TGTARROW_SHAPE, ArrowShape.DELTA);
         eac.getDefaultAppearance().set(VisualPropertyType.EDGE_TGTARROW_OPACITY, 50);
+
         final DiscreteMapping edgeLineStyle = new DiscreteMapping(LineStyle.SOLID, KEGG_RELATION, ObjectMapping.EDGE_MAPPING);
+        final DiscreteMapping edgeSignalLineStyle = new DiscreteMapping(LineStyle.SOLID, KEGG_EDGE_EFFECT, ObjectMapping.EDGE_MAPPING);
+
         final Calculator edgeLineStyleCalc = new BasicCalculator(vsName + "-" + "EdgeLineStyleMapping", edgeLineStyle, VisualPropertyType.EDGE_LINE_STYLE);
+        final Calculator edgeSignalLineStyleCalc = new BasicCalculator(vsName + "-" + "EdgeSignalLineStyleMapping", edgeSignalLineStyle, VisualPropertyType.EDGE_LINE_STYLE);
+
         edgeLineStyle.putMapValue(KEGGRelationType.MAPLINK.getTag(), LineStyle.LONG_DASH);
+        edgeSignalLineStyle.putMapValue(KEGG_INDIRECT_EFFECT, LineStyle.LONG_DASH);
+
         eac.setCalculator(edgeLineStyleCalc);
+        eac.setCalculator(edgeSignalLineStyleCalc);
 
         final DiscreteMapping edgeTgtarrowShape = new DiscreteMapping(ArrowShape.DELTA, Semantics.INTERACTION, ObjectMapping.EDGE_MAPPING);
         final DiscreteMapping edgeEffectShape = new DiscreteMapping(ArrowShape.DELTA, KEGG_EDGE_EFFECT, ObjectMapping.EDGE_MAPPING);

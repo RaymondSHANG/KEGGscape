@@ -50,12 +50,16 @@ public class PathwayMapper {
     private static final String KEGG_COLOR = "KEGG.color";
 
     private static final String KEGG_EDGE_LABEL = "KEGG.edge.label";
+    private static final String KEGG_EDGE_EFFECT = "KEGG.edge.effect";
 
     private static final String KEGG_PHOSPHORYLATION = "phosphorylation";
     private static final String KEGG_DEPHOSPHORYLATION = "dephosphorylation";
     private static final String KEGG_UBIQUITINATION = "ubiquitination";
     private static final String KEGG_GLYCOSYLATION = "glycosylation";
     private static final String KEGG_METHYLATION = "methylation";
+    private static final String KEGG_ACTIVATION = "activation";
+    private static final String KEGG_INHIBITION = "inhibition";
+    private static final String KEGG_INDIRECT_EFFECT = "indirect effect";
 
     // Special cases: Global Map
     private static final String METABOLIC_PATHWAYS_ENTRY_ID = "01100";
@@ -276,14 +280,16 @@ public class PathwayMapper {
                             sub.getName().equals(KEGG_DEPHOSPHORYLATION) ||
                             sub.getName().equals(KEGG_UBIQUITINATION) ||
                             sub.getName().equals(KEGG_GLYCOSYLATION) ||
-                            sub.getName().equals(KEGG_METHYLATION)
-                            ) {
+                            sub.getName().equals(KEGG_METHYLATION)) {
                             edgeAttr.setAttribute(cyEdge.getIdentifier(), KEGG_EDGE_LABEL, sub.getValue());
+                        } else if (sub.getName().equals(KEGG_ACTIVATION) ||
+                                   sub.getName().equals(KEGG_INHIBITION) ||
+                                   sub.getName().equals(KEGG_INDIRECT_EFFECT)) {
+                            edgeAttr.setAttribute(cyEdge.getIdentifier(), KEGG_EDGE_EFFECT, sub.getName());
                         } else {
-                        edgeAttr.setAttribute(cyEdge.getIdentifier(), sub.getName(), sub.getValue());
+                            edgeAttr.setAttribute(cyEdge.getIdentifier(), sub.getName(), sub.getValue());
                         }
                     }
-
                 }
 
             }

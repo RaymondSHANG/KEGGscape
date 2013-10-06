@@ -499,15 +499,19 @@ public class PathwayMapper {
         eac.setCalculator(edgeLineStyleCalc);
 
         final DiscreteMapping edgeTgtarrowShape = new DiscreteMapping(ArrowShape.DELTA, Semantics.INTERACTION, ObjectMapping.EDGE_MAPPING);
+        final DiscreteMapping edgeEffectShape = new DiscreteMapping(ArrowShape.DELTA, KEGG_EDGE_EFFECT, ObjectMapping.EDGE_MAPPING);
         final Calculator edgeTgtarrowShapeCalc = new BasicCalculator(vsName + "-" + "EdgeTgtarrowStyleMapping", edgeTgtarrowShape, VisualPropertyType.EDGE_TGTARROW_SHAPE);
+        final Calculator edgeEffectShapeCalc = new BasicCalculator(vsName + "-" + "EdgeEffectStyleMapping", edgeEffectShape, VisualPropertyType.EDGE_TGTARROW_SHAPE);
 
         edgeTgtarrowShape.putMapValue("cr", ArrowShape.NONE);
         edgeTgtarrowShape.putMapValue("maplink", ArrowShape.NONE);
+        edgeEffectShape.putMapValue("inhibition", ArrowShape.T);
         if (pathway_entryID.equals(METABOLIC_PATHWAYS_ENTRY_ID) || pathway_entryID.equals(BIOSYNTHESIS_OF_SECONDARY_METABOLITES_ENTRY_ID)) {
             edgeTgtarrowShape.putMapValue("cc", ArrowShape.NONE);
         }
 
         eac.setCalculator(edgeTgtarrowShapeCalc);
+        eac.setCalculator(edgeEffectShapeCalc);
 
         // Node Shape Mapping
         final DiscreteMapping nodeShape = new DiscreteMapping(NodeShape.RECT, KEGG_ENTRY, ObjectMapping.NODE_MAPPING);
